@@ -83,11 +83,10 @@ def edit():
         reader = csv.reader(readFile)
         for row in reader:
             lines.append(row)
-            for field in row:
-                if field == members:
-                    lines.remove(row)
-                    lines.insert(count, [id_number.get(), name_entry.get(),
-                                         course_entry.get(), year_entry.get(), gender_entry.get()])
+            if row[0] == members:
+                lines.remove(row)
+                lines.insert(count, [id_number.get(), name_entry.get(),
+                                     course_entry.get(), year_entry.get(), gender_entry.get()])
             count += 1
     with open('student.csv', 'w', newline='') as writeFile:
         writer = csv.writer(writeFile)
