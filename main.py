@@ -11,6 +11,7 @@ style = ttk.Style()
 style.theme_use("clam")
 
 
+
 #Frame for Treeview and scroll
 tree_frame = Frame(root)
 tree_frame.pack(pady = 20)
@@ -47,11 +48,16 @@ def add():
         for row in reader:
             if id_number.get() == row[0]:
                 flag += 1
+                Errormes.config(text='ID number already existed.')
     if flag<1 and id_number.get()!="":
         with open('student.csv', 'a', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow([id_number.get(), name_entry.get(),
                              course_entry.get(), year_entry.get(), gender_entry.get()])
+            Errormes.config(text='')
+    if id_number.get() == '':
+        Errormes.config(text='Please put an ID number.')
+
     display_data()
 
     id_number.delete(0, END)
@@ -74,8 +80,16 @@ def remove_one():
         writer = csv.writer(writeFile)
         writer.writerows(lines)
     display_data()
+    Errormes.config(text='')
 
 def edit():
+    flag = 0
+    with open('student.csv', 'r') as readFile:
+        reader = csv.reader(readFile)
+        for row in reader:
+            if id_number.get() == row[0]:
+                flag += 1
+                Errormes.config(text='ID number already existed.')
     lines = list()
     members = my_tree.focus()
     count = 0
@@ -83,16 +97,28 @@ def edit():
         reader = csv.reader(readFile)
         for row in reader:
             lines.append(row)
-            if row[0] == members:
-                lines.remove(row)
-                lines.insert(count, [id_number.get(), name_entry.get(),
-                                     course_entry.get(), year_entry.get(), gender_entry.get()])
+            if row[0] == members and id_number.get() != '':
+                if flag < 1:
+                    lines.remove(row)
+                    lines.insert(count, [id_number.get(), name_entry.get(),
+                                        course_entry.get(), year_entry.get(), gender_entry.get()])
+                    Errormes.config(text='')
             count += 1
     with open('student.csv', 'w', newline='') as writeFile:
         writer = csv.writer(writeFile)
         writer.writerows(lines)
+        flag = 0
+    if id_number.get() == '':
+        Errormes.config(text='Please put an ID number.')
 
     display_data()
+
+    id_number.delete(0, END)
+    name_entry.delete(0, END)
+    course_entry.delete(0, END)
+    year_entry.delete(0, END)
+    gender_entry.delete(0, END)
+
 
 def select():
     id_number.delete(0, END)
@@ -111,10 +137,12 @@ def select():
     year_entry.insert(0, values[3])
     gender_entry.insert(0, values[4])
 
-    return
+    Errormes.config(text='')
+
 
 def back(e):
     display_data()
+    Errormes.config(text='')
 
 def search(e):
 
@@ -131,8 +159,8 @@ def search(e):
                 if x.lower() in element.lower():
                     my_tree.insert(parent='', index='end', iid=items[0], values=items)
                     break
+    Errormes.config(text='')
 
-    return
 
 def search2():
 
@@ -149,6 +177,7 @@ def search2():
                 if x.lower() in element.lower():
                     my_tree.insert(parent='', index='end', iid=items[0], values=items)
                     break
+    Errormes.config(text='')
 
 
 def update(data):
@@ -210,6 +239,9 @@ add_container2.pack()
 #Labels
 index = Label(root, text='')
 index.pack()
+
+Errormes = Label(root, text='', fg="red")
+Errormes.pack()
 
 il = Label(add_container, text="ID Number")
 il.grid(row = 0, column = 0)
