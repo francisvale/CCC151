@@ -68,9 +68,8 @@ def remove_one():
         reader = csv.reader(readFile)
         for row in reader:
             lines.append(row)
-            for field in row:
-                if field == members:
-                    lines.remove(row)
+            if row[0] == members:
+                lines.remove(row)
     with open('student.csv', 'w', newline='') as writeFile:
         writer = csv.writer(writeFile)
         writer.writerows(lines)
