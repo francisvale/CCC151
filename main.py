@@ -6,25 +6,20 @@ root = Tk()
 root.geometry("720x440")
 root.title("Student Information System")
 
-#create style
+# create style
 style = ttk.Style()
 style.theme_use("clam")
 
-
-
-#Frame for Treeview and scroll
+# Frame for TreeView and scroll
 tree_frame = Frame(root)
-tree_frame.pack(pady = 20)
+tree_frame.pack(pady=10)
 
-#scroll
+# scroll
 tree_scroll = Scrollbar(tree_frame)
 tree_scroll.pack(side=RIGHT, fill=Y)
 
 
-
-
-
-#Functions
+# Functions
 def display_data():
     with open('student.csv', 'r') as displayFile:
         display = csv.reader(displayFile)
@@ -33,8 +28,9 @@ def display_data():
         delete_all()
 
         for line in display:
-            my_tree.insert(parent='', index='end', iid = line[0], text='',
-                           values=(line[0], line[1],line[2],line[3],line[4]))
+            my_tree.insert(parent='', index='end', iid=line[0], text='',
+                           values=(line[0], line[1], line[2], line[3], line[4]))
+
 
 def delete_all():
     for record in my_tree.get_children():
@@ -48,15 +44,15 @@ def add():
         for row in reader:
             if id_number.get() == row[0]:
                 flag += 1
-                Errormes.config(text='ID number already existed.')
-    if flag<1 and id_number.get()!="":
-        with open('student.csv', 'a', newline='') as csvfile:
-            writer = csv.writer(csvfile)
+                error_messages.config(text='ID number already existed.')
+    if flag < 1 and id_number.get() != "":
+        with open('student.csv', 'a', newline='') as csvFile:
+            writer = csv.writer(csvFile)
             writer.writerow([id_number.get(), name_entry.get(),
                              course_entry.get(), year_entry.get(), gender_entry.get()])
-            Errormes.config(text='')
+            error_messages.config(text='')
     if id_number.get() == '':
-        Errormes.config(text='Please put an ID number.')
+        error_messages.config(text='Please put an ID number.')
 
     display_data()
 
@@ -68,28 +64,36 @@ def add():
 
 
 def remove_one():
+    selection = my_tree.selection()
     lines = list()
-    members = my_tree.focus()
-    with open('student.csv', 'r') as readFile:
-        reader = csv.reader(readFile)
-        for row in reader:
-            lines.append(row)
-            if row[0] == members:
-                lines.remove(row)
-    with open('student.csv', 'w', newline='') as writeFile:
+    with open("Student.csv", "r") as file:
+        reader = csv.reader(file)
+        for line in reader:
+            lines.append(line)
+            if line[0] in selection:
+                lines.remove(line)
+    with open("Student.csv", "w", newline='') as writeFile:
         writer = csv.writer(writeFile)
         writer.writerows(lines)
     display_data()
-    Errormes.config(text='')
+    error_messages.config(text='')
+
 
 def edit():
     flag = 0
+    selected = my_tree.focus()
+    lines_test = list()
     with open('student.csv', 'r') as readFile:
         reader = csv.reader(readFile)
         for row in reader:
-            if id_number.get() == row[0]:
-                flag += 1
-                Errormes.config(text='ID number already existed.')
+            lines_test.append(row)
+            if row[0] == selected:
+                lines_test.remove(row)
+    for data in lines_test:
+        if data[0] == id_number.get():
+            flag += 1
+            error_messages.config(text='ID number already existed.')
+
     lines = list()
     members = my_tree.focus()
     count = 0
@@ -101,15 +105,14 @@ def edit():
                 if flag < 1:
                     lines.remove(row)
                     lines.insert(count, [id_number.get(), name_entry.get(),
-                                        course_entry.get(), year_entry.get(), gender_entry.get()])
-                    Errormes.config(text='')
+                                         course_entry.get(), year_entry.get(), gender_entry.get()])
+                    error_messages.config(text='')
             count += 1
     with open('student.csv', 'w', newline='') as writeFile:
         writer = csv.writer(writeFile)
         writer.writerows(lines)
-        flag = 0
     if id_number.get() == '':
-        Errormes.config(text='Please put an ID number.')
+        error_messages.config(text='Please put an ID number.')
 
     display_data()
 
@@ -130,22 +133,22 @@ def select():
     selected = my_tree.focus()
     values = my_tree.item(selected, 'values')
 
-    #output selected values
+    # output selected values
     id_number.insert(0, values[0])
     name_entry.insert(0, values[1])
     course_entry.insert(0, values[2])
     year_entry.insert(0, values[3])
     gender_entry.insert(0, values[4])
 
-    Errormes.config(text='')
+    error_messages.config(text='')
 
 
-def back(e):
+def back(event):
     display_data()
-    Errormes.config(text='')
+    error_messages.config(text='')
 
-def search(e):
 
+def search(event):
     for record in my_tree.get_children():
         my_tree.delete(record)
 
@@ -156,14 +159,13 @@ def search(e):
 
         for items in reader_file:
             for element in items:
-                if x.lower() in element.lower():
+                if x in element:
                     my_tree.insert(parent='', index='end', iid=items[0], values=items)
                     break
-    Errormes.config(text='')
+    error_messages.config(text='')
 
 
 def search2():
-
     for record in my_tree.get_children():
         my_tree.delete(record)
 
@@ -174,10 +176,10 @@ def search2():
 
         for items in reader_file:
             for element in items:
-                if x.lower() in element.lower():
+                if x in element:
                     my_tree.insert(parent='', index='end', iid=items[0], values=items)
                     break
-    Errormes.config(text='')
+    error_messages.config(text='')
 
 
 def update(data):
@@ -195,116 +197,188 @@ def deselect():
     gender_entry.delete(0, END)
 
 
-#Add TreeView
+def sort_name():
+    lines = list()
+    with open('student.csv', 'r') as readFile:
+        reader = csv.reader(readFile)
+        next(reader)
+        for row in reader:
+            lines.append(row)
+
+    for i in range(1, len(lines)):
+        count = 0
+        for j in range(0, len(lines) - 1):
+            if lines[j][1] > lines[j + 1][1]:
+                lines[count], lines[count + 1] = lines[count + 1], lines[count]
+            count += 1
+    lines.insert(0, ["ID Number", "Name", "Course", "Year Level", "Gender"])
+    with open('student.csv', 'w', newline='') as writeFile:
+        writer = csv.writer(writeFile)
+        writer.writerows(lines)
+    display_data()
+
+
+def sort_id():
+    lines = list()
+    with open('student.csv', 'r') as readFile:
+        reader = csv.reader(readFile)
+        next(reader)
+        for row in reader:
+            lines.append(row)
+
+    for i in range(1, len(lines)):
+        count = 0
+        for j in range(0, len(lines) - 1):
+            if lines[j][0] > lines[j + 1][0]:
+                lines[count], lines[count + 1] = lines[count + 1], lines[count]
+            count += 1
+    lines.insert(0, ["ID Number", "Name", "Course", "Year Level", "Gender"])
+    with open('student.csv', 'w', newline='') as writeFile:
+        writer = csv.writer(writeFile)
+        writer.writerows(lines)
+    display_data()
+
+
+def sort_course():
+    lines = list()
+    with open('student.csv', 'r') as readFile:
+        reader = csv.reader(readFile)
+        next(reader)
+        for row in reader:
+            lines.append(row)
+
+    for i in range(1, len(lines)):
+        count = 0
+        for j in range(0, len(lines) - 1):
+            if lines[j][2] > lines[j + 1][2]:
+                lines[count], lines[count + 1] = lines[count + 1], lines[count]
+            count += 1
+    lines.insert(0, ["ID Number", "Name", "Course", "Year Level", "Gender"])
+    with open('student.csv', 'w', newline='') as writeFile:
+        writer = csv.writer(writeFile)
+        writer.writerows(lines)
+    display_data()
+
+
+def sort_gender():
+    lines = list()
+    with open('student.csv', 'r') as readFile:
+        reader = csv.reader(readFile)
+        next(reader)
+        for row in reader:
+            lines.append(row)
+
+    for i in range(1, len(lines)):
+        count = 0
+        for j in range(0, len(lines) - 1):
+            if lines[j][4] > lines[j + 1][4]:
+                lines[count], lines[count + 1] = lines[count + 1], lines[count]
+            count += 1
+    lines.insert(0, ["ID Number", "Name", "Course", "Year Level", "Gender"])
+    with open('student.csv', 'w', newline='') as writeFile:
+        writer = csv.writer(writeFile)
+        writer.writerows(lines)
+    display_data()
+
+
+# Add TreeView
 my_tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set)
 
-
-#Defining Columns
+# Defining Columns
 my_tree['columns'] = ('ID number', 'Name', 'Course', 'Year Level', 'Gender')
 
-#Formatting Column
+# Formatting Column
 my_tree.column("#0", stretch=NO, width=0)
-my_tree.column("ID number", width=120, anchor = W)
-my_tree.column("Name", width=170, anchor = W)
-my_tree.column("Course", width=100, anchor = W)
-my_tree.column("Year Level", width=110, anchor = W)
-my_tree.column("Gender", width=120, anchor = W)
+my_tree.column("ID number", width=120, anchor=W)
+my_tree.column("Name", width=170, anchor=W)
+my_tree.column("Course", width=100, anchor=W)
+my_tree.column("Year Level", width=110, anchor=W)
+my_tree.column("Gender", width=120, anchor=W)
 
-#Create Headings
-#my_tree.heading("#0", anchor = W)
-my_tree.heading("ID number", text='ID Number', anchor = W)
-my_tree.heading("Name", text='Name', anchor = W)
-my_tree.heading("Course", text='Course', anchor = W)
-my_tree.heading("Year Level", text='Year Level', anchor = W)
-my_tree.heading("Gender", text='Gender', anchor = W)
-#Add Data CSV
+# Create Headings
+my_tree.heading("ID number", text='ID Number', command=sort_id, anchor=W)
+my_tree.heading("Name", text='Name', command=sort_name, anchor=W)
+my_tree.heading("Course", text='Course', command=sort_course, anchor=W)
+my_tree.heading("Year Level", text='Year Level', command=sort_id, anchor=W)
+my_tree.heading("Gender", text='Gender', command=sort_gender, anchor=W)
 
+# Add Data CSV
 display_data()
 
+# Display TreeView
 my_tree.pack()
 
-#configure scrollbar
+# configure scrollbar
 tree_scroll.config(command=my_tree.yview)
 
-
-#Frame
-add_container = Frame(root)
-add_container.pack(pady=20)
-
-add_container2 = Frame(root)
+# Frame for record entries
+add_container = LabelFrame(root, text="Record", padx=4, pady=5)
+add_container.pack(pady=10)
+# Frame for actions
+add_container2 = LabelFrame(root, text="Actions", padx=56, pady=5)
 add_container2.pack()
 
-
-
-#Labels
+# Labels
 index = Label(root, text='')
 index.pack()
 
-Errormes = Label(root, text='', fg="red")
-Errormes.pack()
+error_messages = Label(root, text='', fg="red")
+error_messages.pack()
 
 il = Label(add_container, text="ID Number")
-il.grid(row = 0, column = 0)
+il.grid(row=0, column=0)
 
 nl = Label(add_container, text="Name")
-nl.grid(row = 0, column = 1)
+nl.grid(row=0, column=1)
 
 cl = Label(add_container, text="Course")
-cl.grid(row = 0, column = 2)
+cl.grid(row=0, column=2)
 
 yl = Label(add_container, text="Year Level")
-yl.grid(row = 0, column = 3)
+yl.grid(row=0, column=3)
 
 gl = Label(add_container, text="Gender")
-gl.grid(row = 0, column = 4)
+gl.grid(row=0, column=4)
 
 search_btn = Button(add_container2, text='Search', command=search2)
-search_btn.grid(row=0, column = 6)
+search_btn.grid(row=0, column=6)
 
-#Inputs
+# Inputs
 id_number = Entry(add_container, borderwidth=2)
-id_number.grid(row=1, column =0)
+id_number.grid(row=1, column=0)
 
 name_entry = Entry(add_container, borderwidth=2)
-name_entry.grid(row=1, column =1)
+name_entry.grid(row=1, column=1)
 
 course_entry = Entry(add_container, borderwidth=2)
-course_entry.grid(row=1, column =2)
+course_entry.grid(row=1, column=2)
 
 year_entry = Entry(add_container, borderwidth=2)
-year_entry.grid(row=1, column =3)
+year_entry.grid(row=1, column=3)
 
 gender_entry = Entry(add_container, borderwidth=2)
-gender_entry.grid(row=1, column =4)
-
-
-"""search_by = ttk.Combobox(root, values=column)
-search_by.current(0)
-search_by.grid(row=0,column=0)"""
-
+gender_entry.grid(row=1, column=4)
 
 search_entry = Entry(add_container2, borderwidth=2)
-search_entry.grid(row=0, column =5, padx = 10)
+search_entry.grid(row=0, column=5, padx=10)
 
-
-#Buttons
+# Buttons
 add_entry = Button(add_container2, text="Add", command=add)
-add_entry.grid(row = 0, column = 0, padx= 10)
+add_entry.grid(row=0, column=0, padx=10)
 
 modify_entry = Button(add_container2, text="Modify", command=edit)
-modify_entry.grid(row = 0, column = 1, padx= 10)
+modify_entry.grid(row=0, column=1, padx=10)
 
 remove_one = Button(add_container2, text='Remove', command=remove_one)
-remove_one.grid(row = 0, column = 2, padx= 10)
+remove_one.grid(row=0, column=2, padx=10)
 
 select_record = Button(add_container2, text='Select', command=select)
-select_record.grid(row = 0, column = 3, padx= 10)
+select_record.grid(row=0, column=3, padx=10)
 
 deselect_record = Button(add_container2, text='Deselect', command=deselect)
-deselect_record.grid(row=0, column=4, padx= 10)
+deselect_record.grid(row=0, column=4, padx=10)
 
-
-#Create a binding for the search box
+# Create a binding for the search box
 search_entry.bind("<KeyPress>", back)
 search_entry.bind("<Return>", search)
 
