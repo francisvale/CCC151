@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 import csv
 
 root = Tk()
@@ -44,15 +45,14 @@ def add():
         for row in reader:
             if id_number.get() == row[0]:
                 flag += 1
-                error_messages.config(text='ID number already existed.')
+                message_already()
     if flag < 1 and id_number.get() != "":
         with open('student.csv', 'a', newline='') as csvFile:
             writer = csv.writer(csvFile)
             writer.writerow([id_number.get(), name_entry.get(),
                              course_entry.get(), year_entry.get(), gender_entry.get()])
-            error_messages.config(text='')
     if id_number.get() == '':
-        error_messages.config(text='Please put an ID number.')
+        message_empty()
 
     display_data()
 
@@ -76,7 +76,6 @@ def remove_one():
         writer = csv.writer(writeFile)
         writer.writerows(lines)
     display_data()
-    error_messages.config(text='')
 
 
 def edit():
@@ -92,7 +91,7 @@ def edit():
     for data in lines_test:
         if data[0] == id_number.get():
             flag += 1
-            error_messages.config(text='ID number already existed.')
+            message_already()
 
     lines = list()
     members = my_tree.focus()
@@ -106,13 +105,12 @@ def edit():
                     lines.remove(row)
                     lines.insert(count, [id_number.get(), name_entry.get(),
                                          course_entry.get(), year_entry.get(), gender_entry.get()])
-                    error_messages.config(text='')
             count += 1
     with open('student.csv', 'w', newline='') as writeFile:
         writer = csv.writer(writeFile)
         writer.writerows(lines)
     if id_number.get() == '':
-        error_messages.config(text='Please put an ID number.')
+        message_empty()
 
     display_data()
 
@@ -140,12 +138,10 @@ def select():
     year_entry.insert(0, values[3])
     gender_entry.insert(0, values[4])
 
-    error_messages.config(text='')
 
 
 def back(event):
     display_data()
-    error_messages.config(text='')
 
 
 def search(event):
@@ -162,7 +158,6 @@ def search(event):
                 if x in element:
                     my_tree.insert(parent='', index='end', iid=items[0], values=items)
                     break
-    error_messages.config(text='')
 
 
 def search2():
@@ -179,7 +174,6 @@ def search2():
                 if x in element:
                     my_tree.insert(parent='', index='end', iid=items[0], values=items)
                     break
-    error_messages.config(text='')
 
 
 def update(data):
@@ -281,6 +275,14 @@ def sort_gender():
     display_data()
 
 
+def message_empty():
+    messagebox.showerror("Error", "Please put an ID number.")
+
+
+def message_already():
+    messagebox.showerror("Error", "ID number already existed.")
+
+
 # Add TreeView
 my_tree = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set)
 
@@ -322,8 +324,6 @@ add_container2.pack()
 index = Label(root, text='')
 index.pack()
 
-error_messages = Label(root, text='', fg="red")
-error_messages.pack()
 
 il = Label(add_container, text="ID Number")
 il.grid(row=0, column=0)
